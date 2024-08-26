@@ -14,6 +14,9 @@ jobs:
   deploy:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions: # Job-level permissions configuration starts here
+      contents: write           # 'write' access to repository contents
+      pull-requests: write      # 'write' access to pull requests
     steps:
       - name: Checkout wiki
         uses: actions/checkout@v4
