@@ -30,15 +30,18 @@ jobs:
           # Set up your GitHub credentials
           git config --global user.email "ghaction@example.com"
           git config --global user.name "GH Action"
-          
+
+          git checkout -b doing-testing
+
           # Create or update a wiki page
-          
-          test -z "${{ github.event.pull_request.number }}" && exit 1
-          mkdir -p prs/${{ github.event.pull_request.number }}
-          echo "${{ github.event.pull_request.head.ref }}" > prs/${{ github.event.pull_request.number }}/head_ref.md
-          git add prs/${{ github.event.pull_request.number }}/head_ref.md
-          git commit -am "Update wiki page"
-          git push
+          echo "New content for the wiki page" > Home.md
+          echo "github.event.pull_request.head.ref:" >> Home.md
+          echo "${{ github.event.pull_request.head.ref }}" >> Home.md
+          echo "github.event.pull_request.number:"  >> Home.md
+          echo "${{ github.event.pull_request.number }}"  >> Home.md
+          git add -A
+          git commit -m "Update wiki page"
+          git push origin main
   cleanup:
     if: github.event_name == 'pull_request_target' && (github.event.pull_request.state == 'closed' || github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
