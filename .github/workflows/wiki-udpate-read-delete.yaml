@@ -30,25 +30,36 @@ jobs:
           # Set up your GitHub credentials
           git config --global user.email "ghaction@example.com"
           git config --global user.name "GH Action"
-
+          
           # Create or update a wiki page
-          echo "New content for the wiki page" > NewHome.md
-          git add NewHome.md
-          git commit -m "Update wiki page"
+          mkdir -p prs/${{ github.event.pull_request.number }}
+          echo "${{ github.event.pull_request.head.ref }}" > prs/${{ github.event.pull_request.number }}/head_ref.md
+          git add prs/${{ github.event.pull_request.number }}/head_ref.md
+          git commit -am "Update wiki page"
           git push
   cleanup:
     if: github.event_name == 'pull_request_target' && (github.event.pull_request.state == 'closed' || github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Download info from Wiki
-        uses: actions/github-script@v7
+      - name: Checkout wiki
+        uses: actions/checkout@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: wikiPage } = await github.rest.repos.getContent({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              path: `wiki/ReviewApp-${prNumber}.md`
-            });
-            const content = Buffer.from(wikiPage.content, 'base64').toString('utf8');
-            console.log(content);
+          repository: ${{github.repository}}.wiki
+      - name: Read Wiki
+        run: |
+          cat prs/${{ github.event.pull_request.number }}/head_ref.md
+      - name: Delete Wiki
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
+        run: |
+          # Set up your GitHub credentials
+          git config --global user.email "ghaction@example.com"
+          git config --global user.name "GH Action"
+          
+          # Create or update a wiki page
+          rm -rf prs/${{ github.event.pull_request.number }}
+          git add -A
+          git commit -am "Update wiki page"
+          git push
+          
