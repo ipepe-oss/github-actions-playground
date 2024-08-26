@@ -32,7 +32,7 @@ jobs:
           echo "New content for the wiki page" > NewHome.md
           git add NewHome.md
           git commit -m "Update wiki page"
-          git push origin main
+          git push
   cleanup:
     if: github.event_name == 'pull_request_target' && (github.event.pull_request.state == 'closed' || github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
