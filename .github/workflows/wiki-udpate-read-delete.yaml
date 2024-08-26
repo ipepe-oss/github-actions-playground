@@ -15,6 +15,11 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ${{github.repository}}.wiki
+          path: ./.github/wiki/
       - name: Update Wiki
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -23,10 +28,6 @@ jobs:
           # Set up your GitHub credentials
           git config --global user.email "ghaction@example.com"
           git config --global user.name "GH Action"
-
-          # Clone the wiki repository
-          git clone https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.wiki.git repo.wiki
-          cd repo.wiki
 
           # Create or update a wiki page
           echo "New content for the wiki page" > NewHome.md
