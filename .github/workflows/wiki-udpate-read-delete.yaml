@@ -14,38 +14,41 @@ jobs:
   deploy:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions: # Job-level permissions configuration starts here
+      contents: write           # 'write' access to repository contents
+      pull-requests: write      # 'write' access to pull requests
     steps:
-      - name: Add info to Wiki
-        uses: actions/github-script@v4
+      - name: Checkout wiki
+        uses: actions/checkout@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const branch = "${{ github.event.pull_request.head.ref }}"
-            const prNumber = "${{ github.event.pull_request.number }}"
+          repository: ${{github.repository}}.wiki
+          branch: doing-testing
+      - name: Update Wiki
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
+        run: |
+          # Set up your GitHub credentials
+          git config --global user.email "ghaction@example.com"
+          git config --global user.name "GH Action"
+          git config --global push.autoSetupRemote true
 
-            await octokit.rest.repos.createOrUpdateFileContents({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              path: `wiki/ReviewApp-${prNumber}.md`,
-              message: `Update review app info for PR #${prNumber}`,
-              content: Buffer.from(JSON.stringify({
-                branch: branch,
-                prNumber: prNumber
-              })).toString('base64')
-            });
+          echo ${{ github.event.pull_request.head.ref }} > ${{ github.event.pull_request.number }}.md
+          date +%s > last_update.md
+          git add -A
+          git commit -m "Update wiki page"
+          git push
   cleanup:
     if: github.event_name == 'pull_request_target' && (github.event.pull_request.state == 'closed' || github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Download info from Wiki
-        uses: actions/github-script@v4
+      - name: Checkout wiki
+        uses: actions/checkout@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: wikiPage } = await octokit.rest.repos.getContent({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              path: `wiki/ReviewApp-${prNumber}.md`
-            });
-            const content = Buffer.from(wikiPage.content, 'base64').toString('utf8');
-            console.log(content);
+          repository: ${{github.repository}}.wiki
+          branch: doing-testing
+      - name: Read Wiki
+        run: |
+          echo ${{ github.event.pull_request.number }}
+          cat ${{ github.event.pull_request.number }}.md
+          
