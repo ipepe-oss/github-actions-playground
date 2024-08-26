@@ -32,6 +32,8 @@ jobs:
           git config --global user.name "GH Action"
           
           # Create or update a wiki page
+          
+          test -z "${{ github.event.pull_request.number }}" && exit 1
           mkdir -p prs/${{ github.event.pull_request.number }}
           echo "${{ github.event.pull_request.head.ref }}" > prs/${{ github.event.pull_request.number }}/head_ref.md
           git add prs/${{ github.event.pull_request.number }}/head_ref.md
