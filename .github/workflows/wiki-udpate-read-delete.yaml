@@ -30,6 +30,7 @@ jobs:
           # Set up your GitHub credentials
           git config --global user.email "ghaction@example.com"
           git config --global user.name "GH Action"
+          git config --global push.autoSetupRemote true
 
           git checkout -b doing-testing
 
