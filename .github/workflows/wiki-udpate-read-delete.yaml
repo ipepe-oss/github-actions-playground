@@ -1,0 +1,51 @@
+name: WikiUpdateReadDelete
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  deploy:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add info to Wiki
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branch = "${{ github.event.pull_request.head.ref }}"
+            const prNumber = "${{ github.event.pull_request.number }}"
+
+            await octokit.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: `wiki/ReviewApp-${prNumber}.md`,
+              message: `Update review app info for PR #${prNumber}`,
+              content: Buffer.from(JSON.stringify({
+                branch: branch,
+                prNumber: prNumber
+              })).toString('base64')
+            });
+  cleanup:
+    if: github.event_name == 'pull_request_target' && (github.event.pull_request.state == 'closed' || github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download info from Wiki
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: wikiPage } = await octokit.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: `wiki/ReviewApp-${prNumber}.md`
+            });
+            const content = Buffer.from(wikiPage.content, 'base64').toString('utf8');
+            console.log(content);
