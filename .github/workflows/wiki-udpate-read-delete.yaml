@@ -16,9 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout wiki
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
         uses: actions/checkout@v4
         with:
           repository: ${{github.repository}}.wiki
