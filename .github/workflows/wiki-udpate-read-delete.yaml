@@ -34,12 +34,8 @@ jobs:
 
           git checkout -b doing-testing
 
-          # Create or update a wiki page
-          echo "New content for the wiki page" > Home.md
-          echo "github.event.pull_request.head.ref:" >> Home.md
-          echo "${{ github.event.pull_request.head.ref }}" >> Home.md
-          echo "github.event.pull_request.number:"  >> Home.md
-          echo "${{ github.event.pull_request.number }}"  >> Home.md
+          echo ${{ github.event.pull_request.head.ref }} > ${{ github.event.pull_request.number }}.md
+          date +%s > last_update.md
           git add -A
           git commit -m "Update wiki page"
           git push
@@ -51,21 +47,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{github.repository}}.wiki
+          branch: doing-testing
       - name: Read Wiki
         run: |
-          cat prs/${{ github.event.pull_request.number }}/head_ref.md
-      - name: Delete Wiki
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
-        run: |
-          # Set up your GitHub credentials
-          git config --global user.email "ghaction@example.com"
-          git config --global user.name "GH Action"
-          
-          # Create or update a wiki page
-          rm -rf prs/${{ github.event.pull_request.number }}
-          git add -A
-          git commit -am "Update wiki page"
-          git push
+          echo ${{ github.event.pull_request.number }}
+          cat ${{ github.event.pull_request.number }}.md
           
