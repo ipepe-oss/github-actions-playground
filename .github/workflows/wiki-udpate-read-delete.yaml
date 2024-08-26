@@ -23,7 +23,7 @@ jobs:
             const branch = "${{ github.event.pull_request.head.ref }}"
             const prNumber = "${{ github.event.pull_request.number }}"
 
-            await octokit.rest.repos.createOrUpdateFileContents({
+            await github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
               repo: context.repo.repo,
               path: `wiki/ReviewApp-${prNumber}.md`,
@@ -42,7 +42,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { data: wikiPage } = await octokit.rest.repos.getContent({
+            const { data: wikiPage } = await github.rest.repos.getContent({
               owner: context.repo.owner,
               repo: context.repo.repo,
               path: `wiki/ReviewApp-${prNumber}.md`
