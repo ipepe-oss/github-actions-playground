@@ -15,24 +15,24 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Add info to Wiki
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const branch = "${{ github.event.pull_request.head.ref }}"
-            const prNumber = "${{ github.event.pull_request.number }}"
+      - name: Update Wiki
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
+        run: |
+          # Set up your GitHub credentials
+          git config --global user.email "ghaction@example.com"
+          git config --global user.name "GH Action"
 
-            await github.rest.repos.createOrUpdateFileContents({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              path: `wiki/ReviewApp-${prNumber}.md`,
-              message: `Update review app info for PR #${prNumber}`,
-              content: Buffer.from(JSON.stringify({
-                branch: branch,
-                prNumber: prNumber
-              })).toString('base64')
-            });
+          # Clone the wiki repository
+          git clone https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.wiki.git repo.wiki
+          cd repo.wiki
+
+          # Create or update a wiki page
+          echo "New content for the wiki page" > NewHome.md
+          git add NewHome.md
+          git commit -m "Update wiki page"
+          git push origin main
   cleanup:
     if: github.event_name == 'pull_request_target' && (github.event.pull_request.state == 'closed' || github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
